@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Test the function est_abilities_mirt.
+```{r}
+library(mirt)
+library(dplyr)
+data(Science)
+
+Science_model <- mirt(data = Science, model = 1, itemtype = "graded")
+est_abilities_mirt(model = Science_model, newdata = Science[1:2, c(1, 3)])
+```
+Test the function simulate_response_grm.
+
+```{r}
+my_abilities <- rnorm(n=100)
+my_item_params <- matrix(c(1, 1, 1, -1, 0, 1), ncol=2)
+simulate_response_grm(theta=my_abilities, item_params=my_item_params)
+```
+
+Test the custom function to estimate abilities given the reponses and item parameters. Compare to the results from the fscore function in the mirt package.
+```{r}
+Science <- mirt::Science
+mirtmodel <- mirt(data=Science, model=1, itemtype = "graded")
+my_item_params <- coef(mirtmodel, IRTpars=T, simplify=T)$items
+est_abilities_custom(item_params=my_item_params,
+                     newdata=Science[1:5,], the_method="ML")
+fscores(object=mirtmodel, method="ML", response.pattern=Science[1:5, ])
+```
+Now compare the same functions using the MAP method.
+
+```{r}
+est_abilities_custom(item_params=my_item_params,
+                     newdata=Science[1:5,], the_method="MAP")
+fscores(object=mirtmodel, method="MAP", response.pattern=Science[1:5, ])
+```
+
+This matches as well, and we get the standard errors right (calculated from the hessian).
+
+
+```{r}
+mirtmodel <- mirt(data = Science, model = 1, itemtype = "graded")
+find_next(model=mirtmodel, model_data=Science[1, ], included_variables = c(1,3))
+```
+
